@@ -1,0 +1,134 @@
+{
+  "overall_health": {
+    "status": "WATCH",
+    "red_products": 2,
+    "amber_products": 3,
+    "alerts": [
+      {
+        "product": "Credit Card Apply",
+        "success_rate": 29,
+        "status": "RED"
+      },
+      {
+        "product": "Insurance Buy",
+        "success_rate": 26,
+        "status": "RED"
+      },
+      {
+        "product": "Personal Loan",
+        "success_rate": 38,
+        "status": "AMBER"
+      }
+    ]
+  },
+
+  "summary_metrics": {
+    "overall_success_rate": 43,
+    "success_change_vs_last_period": 3,
+
+    "customer_abandonment_rate": 27,
+    "highest_abandonment_product": {
+      "name": "Insurance Buy",
+      "value": 36
+    },
+    "lowest_abandonment_product": {
+      "name": "Gold Loan",
+      "value": 21
+    },
+
+    "total_drop_off_rate": 30,
+    "policy_drop_off_average": 20,
+    "tech_drop_off_average": 10,
+
+    "active_products_monitored": 8,
+    "green_products": 3,
+    "red_products": 2
+  },
+
+  "journey_performance_by_category": [
+    {
+      "category": "Assets",
+      "products": [
+        {
+          "product_name": "Gold Loan",
+          "successful": 52,
+          "abandoned": 21,
+          "drop_off_policy": 17,
+          "drop_off_tech": 10,
+          "health_status": "GREEN"
+        },
+        {
+          "product_name": "Personal Loan",
+          "successful": 38,
+          "abandoned": 29,
+          "drop_off_policy": 23,
+          "drop_off_tech": 10,
+          "health_status": "AMBER"
+        }
+      ]
+    },
+    {
+      "category": "Cards",
+      "products": [
+        {
+          "product_name": "Credit Card Apply",
+          "successful": 29,
+          "abandoned": 33,
+          "drop_off_policy": 28,
+          "drop_off_tech": 10,
+          "health_status": "RED"
+        },
+        {
+          "product_name": "Forex Card",
+          "successful": 55,
+          "abandoned": 20,
+          "drop_off_policy": 15,
+          "drop_off_tech": 10,
+          "health_status": "GREEN"
+        }
+      ]
+    },
+    {
+      "category": "Liabilities",
+      "products": [
+        {
+          "product_name": "Savings Account",
+          "successful": 41,
+          "abandoned": 30,
+          "drop_off_policy": 19,
+          "drop_off_tech": 10,
+          "health_status": "AMBER"
+        },
+        {
+          "product_name": "Fixed Deposit",
+          "successful": 58,
+          "abandoned": 18,
+          "drop_off_policy": 14,
+          "drop_off_tech": 10,
+          "health_status": "GREEN"
+        }
+      ]
+    },
+    {
+      "category": "Third Party",
+      "products": [
+        {
+          "product_name": "Insurance Buy",
+          "successful": 26,
+          "abandoned": 36,
+          "drop_off_policy": 28,
+          "drop_off_tech": 10,
+          "health_status": "RED"
+        },
+        {
+          "product_name": "Mutual Fund SIP",
+          "successful": 39,
+          "abandoned": 31,
+          "drop_off_policy": 20,
+          "drop_off_tech": 10,
+          "health_status": "AMBER"
+        }
+      ]
+    }
+  ]
+}
