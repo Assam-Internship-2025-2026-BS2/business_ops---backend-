@@ -1,110 +1,151 @@
+from datetime import datetime, timedelta
 from database import get_client
-from queries import dashboard_query
+from queries import (
+    executive_aggregate_query,
+    max_product_time_query,
+    product_alerts_query
+)
 
 
-def calculate_health(success_rate):
-    if success_rate >= 60:
-        return "GREEN"
-    elif success_rate >= 40:
-        return "AMBER"
+def get_date_range(time_range):
+    today = datetime.today().date()
+
+    if time_range == "Today":
+        return today, today
+    elif time_range == "Yesterday":
+        y = today - timedelta(days=1)
+        return y, y
+    elif time_range == "Last 7 Days":
+        return today - timedelta(days=7), today
+    elif time_range == "Last 30 Days":
+        return today - timedelta(days=30), today
     else:
-        return "RED"
+        return today.replace(day=1), today
 
 
-def fetch_dashboard_data():
-    client = get_client()
-    query = dashboard_query()
-    result = client.query(query)
+def generate_alerts(client, params):
 
-    rows = result.result_rows
-
-    categories = {}
-    total_success = 0
-    total_journeys = 0
-    total_abandoned = 0
-    total_drop_policy = 0
-    total_drop_tech = 0
-
-    red_count = 0
-    amber_count = 0
-    green_count = 0
     alerts = []
 
+    result = client.query(product_alerts_query(), parameters=params)
+    rows = result.result_rows
+
     for row in rows:
-        category = row[0]
-        product_name = row[1]
-        total = row[2]
-        success = row[3]
-        abandoned = row[4]
-        drop_policy = row[5]
-        drop_tech = row[6]
+        product = row[0]
+        started = row[1] or 0
+        completed = row[2] or 0
+        approved = row[3] or 0
+        failures = row[4] or 0
+        sla_breached = row[5] or 0
 
-        if total == 0:
-            continue
+        conversion = (completed / started) * 100 if started else 0
 
-        success_rate = round((success / total) * 100)
-        abandoned_rate = round((abandoned / total) * 100)
-        drop_policy_rate = round((drop_policy / total) * 100)
-        drop_tech_rate = round((drop_tech / total) * 100)
-
-        health = calculate_health(success_rate)
-
-        if health == "RED":
-            red_count += 1
+        if conversion < 40:
             alerts.append({
-                "product": product_name,
-                "success_rate": success_rate,
-                "status": "RED"
+                "text": f"{product} conversion dropped below threshold ({round(conversion,1)}%)",
+                "severity": "CRITICAL"
             })
-        elif health == "AMBER":
-            amber_count += 1
-        else:
-            green_count += 1
 
-        if category not in categories:
-            categories[category] = []
+        if failures > 50:
+            alerts.append({
+                "text": f"{product} failures increased significantly",
+                "severity": "CRITICAL"
+            })
 
-        categories[category].append({
-            "product_name": product_name,
-            "successful": success_rate,
-            "abandoned": abandoned_rate,
-            "drop_off_policy": drop_policy_rate,
-            "drop_off_tech": drop_tech_rate,
-            "health_status": health
-        })
+        if sla_breached > 100:
+            alerts.append({
+                "text": f"{product} SLA breached — {sla_breached} cases",
+                "severity": "WARNING"
+            })
 
-        total_success += success
-        total_journeys += total
-        total_abandoned += abandoned
-        total_drop_policy += drop_policy
-        total_drop_tech += drop_tech
+    return alerts
 
-    overall_success_rate = round((total_success / total_journeys) * 100)
-    customer_abandonment_rate = round((total_abandoned / total_journeys) * 100)
-    total_drop_off_rate = round(((total_drop_policy + total_drop_tech) / total_journeys) * 100)
 
-    overall_status = "WATCH" if red_count > 0 else "STABLE"
+def fetch_executive_dashboard(time_range, channel, region, segment):
+
+    client = get_client()
+
+    from_date, to_date = get_date_range(time_range)
+
+    params = {
+        "from_date": from_date,
+        "to_date": to_date,
+        "channel": channel,
+        "region": region,
+        "segment": segment
+    }
+
+    result = client.query(executive_aggregate_query(), parameters=params)
+    row = result.result_rows[0]
+
+    started = row[0] or 0
+    submitted = row[1] or 0
+    in_progress = row[2] or 0
+    completed = row[3] or 0
+    approved = row[4] or 0
+    failures = row[5] or 0
+    avg_time = row[6] or 0
+    sla_target = row[7] or 0
+    pipeline_total = row[8] or 0
+    pipeline_risk = row[9] or 0
+    sla_breached = row[10] or 0
+    stuck = row[11] or 0
+
+    conversion = (completed / started) * 100 if started else 0
+    approval = (approved / completed) * 100 if completed else 0
+    pipeline_percentage = (pipeline_risk / pipeline_total) * 100 if pipeline_total else 0
+
+    max_product_result = client.query(max_product_time_query(), parameters=params)
+    max_product_row = max_product_result.result_rows[0] if max_product_result.result_rows else ["N/A", 0]
+
+    alerts = generate_alerts(client, params)
+
+    health_status = "WATCH" if len(alerts) > 0 else "STABLE"
 
     return {
         "overall_health": {
-            "status": overall_status,
-            "red_products": red_count,
-            "amber_products": amber_count,
+            "status": health_status,
+            "critical_products": len(alerts),
+            "message": f"{len(alerts)} products showing risk signals",
             "alerts": alerts
         },
-        "summary_metrics": {
-            "overall_success_rate": overall_success_rate,
-            "customer_abandonment_rate": customer_abandonment_rate,
-            "total_drop_off_rate": total_drop_off_rate,
-            "active_products_monitored": len(rows),
-            "green_products": green_count,
-            "red_products": red_count
-        },
-        "journey_performance_by_category": [
-            {
-                "category": cat,
-                "products": products
+        "kpi_cards": {
+            "onboarding_started": {
+                "value": started,
+                "trend_percentage": 0,
+                "trend_direction": "UP",
+                "submitted": submitted,
+                "in_progress": in_progress
+            },
+            "onboarding_completed": {
+                "value": completed,
+                "trend_percentage": 0,
+                "trend_direction": "UP",
+                "conversion_rate": round(conversion, 2),
+                "approval_rate": round(approval, 2)
+            },
+            "avg_completion_time": {
+                "value_minutes": round(avg_time, 2),
+                "trend_minutes": 0,
+                "trend_direction": "UP",
+                "sla_target_minutes": round(sla_target, 2),
+                "max_product_time_minutes": round(max_product_row[1], 2),
+                "max_product_name": max_product_row[0]
+            },
+            "pipeline_at_risk": {
+                "amount_cr": round(pipeline_risk, 2),
+                "trend_cr": 0,
+                "trend_direction": "UP",
+                "percentage_of_total_pipeline": round(pipeline_percentage, 2),
+                "sla_breached": sla_breached,
+                "stuck_over_24h": stuck
             }
-            for cat, products in categories.items()
-        ]
+        },
+        "filters_applied": {
+            "time_range": time_range,
+            "channel": channel,
+            "region": region,
+            "segment": segment
+        },
+        "data_as_of_timestamp": datetime.utcnow()
     }

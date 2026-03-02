@@ -1,16 +1,42 @@
-from fastapi import FastAPI
-from services import fetch_dashboard_data
-from schemas import DashboardResponse
+from fastapi import FastAPI, Query
+from fastapi.responses import JSONResponse
+from services import fetch_executive_dashboard
+from schemas import ExecutiveResponse
 
 app = FastAPI(
-    title="Business Ops Dashboard API",
-    version="2.0.0"
+    title="Business Ops Executive API",
+    version="1.0.0"
 )
 
 @app.get("/")
 def home():
-    return {"message": "Business Ops Dashboard API Running"}
+    return {
+        "message": "Business Ops Executive API is running",
+    }
 
-@app.get("/dashboard", response_model=DashboardResponse)
-def get_dashboard():
-    return fetch_dashboard_data()
+
+@app.get("/executive-dashboard", response_model=ExecutiveResponse)
+def get_executive_dashboard(
+    time_range: str = Query("This Month"),
+    channel: str = Query("All"),
+    region: str = Query("All"),
+    segment: str = Query("All"),
+    comparison: str = Query("V/S Last Month")
+):
+    try:
+        data = fetch_executive_dashboard(
+            time_range=time_range,
+            channel=channel,
+            region=region,
+            segment=segment
+        )
+        return data
+
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "error": "Internal Server Error",
+                "message": str(e)
+            }
+        )
