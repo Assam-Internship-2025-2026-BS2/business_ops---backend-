@@ -1,0 +1,67 @@
+{
+  "overall_health": {
+    "status": "WATCH",
+    "critical_products": 3,
+    "message": "3 products showing risk signals in the selected period",
+    "alerts": [
+      {
+        "text": "Credit Card conversion dropped below threshold (38.4%)",
+        "severity": "CRITICAL"
+      },
+      {
+        "text": "Video KYC failures increased significantly",
+        "severity": "CRITICAL"
+      },
+      {
+        "text": "Personal Loan SLA breached — 2180 cases",
+        "severity": "WARNING"
+      }
+    ]
+  },
+
+  "kpi_cards": {
+    "onboarding_started": {
+      "value": 1200,
+      "trend_percentage": 4.2,
+      "trend_direction": "UP",
+      "submitted": 700,
+      "in_progress": 500
+    },
+
+    "onboarding_completed": {
+      "value": 510,
+      "trend_percentage": -1.5,
+      "trend_direction": "DOWN",
+      "conversion_rate": 42.5,
+      "approval_rate": 70.6
+    },
+
+    "avg_completion_time": {
+      "value_minutes": 18,
+      "trend_minutes": 1.8,
+      "trend_direction": "UP",
+      "sla_target_minutes": 15,
+      "max_product_time_minutes": 44,
+      "max_product_name": "Home Loan"
+    },
+
+    "pipeline_at_risk": {
+      "amount_cr": 2.4,
+      "trend_cr": 0.6,
+      "trend_direction": "UP",
+      "percentage_of_total_pipeline": 12.4,
+      "sla_breached": 45,
+      "stuck_over_24h": 12
+    }
+  },
+
+  "filters_applied": {
+    "time_range": "Today",
+    "channel": "Mobile App",
+    "region": "East Zone",
+    "segment": "Retail",
+    "comparison": "V/S Last Month"
+  },
+
+  "data_as_of_timestamp": "2026-03-02T10:32:18Z"
+}
