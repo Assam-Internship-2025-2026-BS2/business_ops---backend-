@@ -4,7 +4,7 @@ client = Client(
     host='localhost',
     port=9000,
     user='default',
-    password='admin123',
+    password='REstart@789',
     database='business_ops'
 )
 

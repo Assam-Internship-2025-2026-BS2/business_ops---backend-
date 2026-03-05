@@ -4,6 +4,9 @@ client = Client(
     host="localhost",
     port=9000,
     user="default",
-    password="admin",
-    database="journey_dashboard"
+    password="REstart@789",
+    database="business_ops"
 )
+
+def get_clickhouse_client():
+    return client

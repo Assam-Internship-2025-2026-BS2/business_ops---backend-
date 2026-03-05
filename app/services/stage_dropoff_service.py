@@ -27,13 +27,13 @@ def get_stage_dropoff(filters):
     query = f"""
     SELECT
         product_name,
-        SUM(started),
-        SUM(submitted),
-        SUM(in_progress),
-        SUM(completed),
-        SUM(approved)
+        SUM(started) AS started,
+        SUM(submitted) AS submitted,
+        SUM(in_progress) AS in_progress,
+        SUM(completed) AS completed,
+        SUM(approved) AS approved
 
-    FROM journey_dashboard.journey_metrics
+    FROM journey_metrics
     {where}
 
     GROUP BY product_name
